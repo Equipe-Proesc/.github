@@ -1,0 +1,41 @@
+replicaCount: 1
+
+containersPath: containers.yml
+envObject: environment.yml
+
+image:
+  repository: 607751015014.dkr.ecr.sa-east-1.amazonaws.com
+  pullPolicy: IfNotPresent
+  tag: latest
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: { }
+  name: ""
+
+podAnnotations: { }
+
+podSecurityContext: { }
+
+securityContext: { }
+
+service:
+  type: NodePort
+  port: 8080
+  annotations:
+    alb.ingress.kubernetes.io/healthcheck-path: /health-check
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 1200m
+
+nodeSelector: { }
+
+tolerations: [ ]
+
+affinity: { }
