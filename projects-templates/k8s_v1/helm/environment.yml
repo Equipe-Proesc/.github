@@ -1,6 +1,9 @@
 apiVersion: v1
+data:
+  TESTE: MTIz
+  TESTE2: Ik9sw6Ei
+  VARIAVEL: Im1haXMgdW1hIHZhcmnDoXZlbCBhcXVpIg==
 kind: Secret
 metadata:
-  name: teste
-data:
-  TESTE: 123u
+  name: backend-teste
+type: Opaque

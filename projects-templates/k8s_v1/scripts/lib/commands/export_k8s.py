@@ -34,4 +34,7 @@ def export_k8s(
         for flag in is_production_flags:
             args.insert(-2, flag)
 
+    if release_name.startswith('ci-'):
+        args.insert(2, '--install')
+
     subprocess.call(args)

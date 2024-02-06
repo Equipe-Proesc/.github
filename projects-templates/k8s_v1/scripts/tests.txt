@@ -1,0 +1,9 @@
+python projects-templates/k8s_v1/scripts/main.py create-containers main-web 607751015014.dkr.ecr.sa-east-1.amazonaws.com/proesc-backend:web-main-a8306e85b63675ff2a6be56910c3c958353bb43d --requests-cpu 100m --requests-mem 248Mib --output-path projects-templates/k8s_v1/helm/containers.yml --healthcheck-path / --port 8080
+
+python projects-templates/k8s_v1/scripts/main.py create-environment backend-teste --output-path projects-templates/k8s_v1/helm/environment.yml --data 'TESTE=123</>TESTE2="Olá"</>VARIAVEL="mais uma variável aqui"'
+
+python projects-templates/k8s_v1/scripts/main.py deploy-k8s teste-integracao-cicd-backend 8080
+
+ python projects-templates/k8s_v1/scripts/main.py add-ci-k8s-dns proesc-testes2 8080 testes2.ci.proesc.co
+
+python projects-templates/k8s_v1/scripts/main.py delete-ci-k8s teste-integracao-cicd-backend
