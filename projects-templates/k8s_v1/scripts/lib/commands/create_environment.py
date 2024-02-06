@@ -5,20 +5,23 @@ from lib.app import app
 
 
 import yaml
+import typer
 
 
-@app.command()
+@app.command(
+    context_settings={'allow_extra_args': True, 'ignore_unknown_options': True}
+)
 def create_environment(
+    ctx: typer.Context,
     name: str,
     kind: str = 'Secret',
     type: str = 'Opaque',
     output_path: str = 'environment.yml',
-    data: str = "EXAMPLE='test'</>EXAMPLE2='@Anstruther'"
 ):
     with open(output_path, 'w') as f:
         f.write(yaml.dump([]))
     with open(output_path, 'w') as f:
-        kwargs = data.split('</>')
+        kwargs = ctx.args
         encoded_kwargs: Dict[str, str] = {}
         for kwarg in kwargs:
             key, value = kwarg.split('=', 1)
