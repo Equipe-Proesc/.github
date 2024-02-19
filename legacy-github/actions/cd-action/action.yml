@@ -1,0 +1,445 @@
+name: Deploy Proesc
+description: Makes deploy of Proesc
+inputs:
+  imageTag:
+    required: true
+    description: ""
+    default: main-latest
+  awsRoleArn:
+    required: true
+    description: ""
+    default: ''
+  awsRegion:
+    required: true
+    description: ""
+    default: sa-east-1
+  kubeconfig:
+    required: true
+    description: ""
+    default: ''
+  accessKeyId:
+    required: true
+    description: ""
+    default: ''
+  secretAccessKey:
+    required: true
+    description: ""
+    default: ''
+  fullnameOverride:
+    required: true
+    description: ""
+    default: ''
+  k8sNamespace:
+    required: true
+    description: ""
+    default: staging
+  certificateArn:
+    required: false
+    description: ""
+    default: "false"
+  isProduction:
+    required: false
+    description: ""
+    default: "false"
+  outputName:
+    required: false
+    description: ""
+  atlassianValidationConfig:
+    required: false
+    description: ""
+    default: "not-set"
+  APP_NAME:
+    required: false
+    description: ""
+  APP_ENV:
+    required: false
+    description: ""
+  APP_URL:
+    required: false
+    description: ""
+  BETA_URL:
+    required: false
+    description: ""
+  AUTH_REMINDER_EXPIRE:
+    required: false
+    description: ""
+  SESSION_DRIVER:
+    required: false
+    description: ""
+  SESSION_LIFETIME:
+    required: false
+    description: ""
+  SESSION_CONNECTION:
+    required: false
+    description: ""
+  SESSION_SECURE:
+    required: false
+    description: ""
+  DB_CONNECTION:
+    required: false
+    description: ""
+  DB_HOST:
+    required: false
+    description: ""
+  DB_PORT:
+    required: false
+    description: ""
+  DB_DATABASE:
+    required: false
+    description: ""
+  DB_USERNAME:
+    required: false
+    description: ""
+  DB_PASSWORD:
+    required: false
+    description: ""
+  DB_REPLI1_CONNECTION:
+    required: false
+    description: ""
+  DB_REPLI1_HOST:
+    required: false
+    description: ""
+  DB_REPLI1_PORT:
+    required: false
+    description: ""
+  DB_REPLI1_DATABASE:
+    required: false
+    description: ""
+  DB_REPLI1_USERNAME:
+    required: false
+    description: ""
+  DB_REPLI1_PASSWORD:
+    required: false
+    description: ""
+  DB_REPLI2_CONNECTION:
+    required: false
+    description: ""
+  DB_REPLI2_HOST:
+    required: false
+    description: ""
+  DB_REPLI2_PORT:
+    required: false
+    description: ""
+  DB_REPLI2_DATABASE:
+    required: false
+    description: ""
+  DB_REPLI2_USERNAME:
+    required: false
+    description: ""
+  DB_REPLI2_PASSWORD:
+    required: false
+    description: ""
+  DB_GATILHO_CONNECTION:
+    required: false
+    description: ""
+  DB_GATILHO_HOST:
+    required: false
+    description: ""
+  DB_GATILHO_PORT:
+    required: false
+    description: ""
+  DB_GATILHO_DATABASE:
+    required: false
+    description: ""
+  DB_GATILHO_USERNAME:
+    required: false
+    description: ""
+  DB_GATILHO_PASSWORD:
+    required: false
+    description: ""
+  LOG_CONNECTION:
+    required: false
+    description: ""
+  LOG_HOST:
+    required: false
+    description: ""
+  LOG_PORT:
+    required: false
+    description: ""
+  LOG_DATABASE:
+    required: false
+    description: ""
+  LOG_USERNAME:
+    required: false
+    description: ""
+  LOG_PASSWORD:
+    required: false
+    description: ""
+  REDIS_HOST:
+    required: false
+    description: ""
+  REDIS_DATABASE:
+    required: false
+    description: ""
+  REDIS_PASSWORD:
+    required: false
+    description: ""
+  REDIS_PORT:
+    required: false
+    description: ""
+  S3_KEY:
+    required: false
+    description: ""
+  S3_SECRET:
+    required: false
+    description: ""
+  SQS_ACCESS_KEY:
+    required: false
+    description: ""
+  SQS_SECRET_ACCESS_KEY:
+    required: false
+    description: ""
+  ZENDESK_USERNAME:
+    required: false
+    description: ""
+  ZENDESK_PASSWORD:
+    required: false
+    description: ""
+  REMESSA_RETORNO_DNS:
+    required: false
+    description: ""
+  REMESSA_RETORNO_USER:
+    required: false
+    description: ""
+  REMESSA_RETORNO_PASSWORD:
+    required: false
+    description: ""
+  METABASE_SITE_URL:
+    required: false
+    description: ""
+  METABASE_SECRET_KEY:
+    required: false
+    description: ""
+  METABASE_TOKEN:
+    required: false
+    description: ""
+  OMNIE_KEY_PROESC:
+    required: false
+    description: ""
+  OMNIE_SECRET_PROESC:
+    required: false
+    description: ""
+  OMNIE_KEY_INOVADADOS:
+    required: false
+    description: ""
+  OMNIE_SECRET_INOVADAOS:
+    required: false
+    description: ""
+  ONESIGNAL_KEY:
+    required: false
+    description: ""
+  ONESIGNAL_API_PROESC:
+    required: false
+    description: ""
+  ONESIGNAL_API_PREFEITURA:
+    required: false
+    description: ""
+  IUGU_MARKETPLACE:
+    required: false
+    description: ""
+  IUGU_FINANCEIRO:
+    required: false
+    description: ""
+  JWT_SECRET:
+    required: false
+    description: ""
+  ZENVIA_SECRET:
+    required: false
+    description: ""
+  PIXOUT_SECRET:
+    required: false
+    description: ""
+  LAYERS_TOKEN:
+    required: false
+    description: ""
+  TOKEN_GATILHOS:
+    required: false
+    description: ""
+  ENOTAS_TOKEN:
+    required: false
+    description: ""
+  POSITUS_API_TOKEN:
+    required: false
+    description: ""
+  MAIL_DRIVER:
+    required: false
+    description: ""
+  MAIL_HOST:
+    required: false
+    description: ""
+  MAIL_PORT:
+    required: false
+    description: ""
+  MAIL_FROM_ADDRESS:
+    required: false
+    description: ""
+  MAIL_ENCRYPTION:
+    required: false
+    description: ""
+  MAIL_USERNAME:
+    required: false
+    description: ""
+  MAIL_PASSWORD:
+    required: false
+    description: ""
+  OMNIE_KEY_REDHOUSE:
+    required: false
+    description: ""
+  OMNIE_SECRET_REDHOUSE:
+    required: false
+    description: ""
+runs:
+  using: composite
+  steps:
+    - name: Set up Docker Buildx
+      id: setup-docker
+      uses: docker/setup-buildx-action@v2
+
+    - name: Creates Atlassian config validation
+      shell: bash
+      if: inputs.atlassianValidationConfig != 'not-set'
+      run: echo ${{ inputs.atlassianValidationConfig }} | base64 -d > atlassian-domain-verification.html
+
+    - name: Configure Role AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      id: configure-aws-docker
+      with:
+        role-to-assume: ${{ inputs.awsRoleArn }}
+        aws-region: ${{ inputs.awsRegion }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+      with:
+        mask-password: true
+
+    - name: Build cache for Docker
+      uses: actions/cache@v3
+      id: build-cache
+      with:
+        path: app-build-cache
+        key: ${{ runner.os }}-app-build-cache-${{ hashFiles('composer.*') }}
+
+    - name: Inject cache into docker
+      id: inject-cache
+      uses: reproducible-containers/buildkit-cache-dance@v2.1.2
+      with:
+        cache-source: app-build-cache
+
+    - name: Build and push app
+      uses: docker/build-push-action@v4
+      id: build-push
+      with:
+        context: .
+        file: ./docker/dockerfiles/Dockerfile
+        push: true
+        tags: 607751015014.dkr.ecr.sa-east-1.amazonaws.com/proesc:${{ inputs.imageTag }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Creates kubeconfig
+      shell: bash
+      run: echo ${{ inputs.kubeconfig }} | base64 -d > /tmp/kubeconfig.yml
+
+    - name: Configure User AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      id: configure-aws-k8s
+      with:
+        aws-access-key-id: ${{ inputs.accessKeyId }}
+        aws-secret-access-key: ${{ inputs.secretAccessKey }}
+        aws-region: ${{ inputs.awsRegion }}
+
+    - name: Deploy app
+      shell: bash
+      id: deploy-app
+      run: |
+        k8s/scripts/deploy.sh \
+            "" \
+            ${{ inputs.fullnameOverride }} \
+            607751015014.dkr.ecr.sa-east-1.amazonaws.com/proesc \
+            ${{ inputs.imageTag }} \
+            ${{ inputs.k8sNamespace }} \
+            ${{ inputs.certificateArn }} \
+            ${{ inputs.isProduction }}
+      env:
+        KUBECONFIG: /tmp/kubeconfig.yml
+        APP_NAME: ${{ inputs.APP_NAME }}
+        APP_ENV: ${{ inputs.APP_ENV }}
+        APP_URL: ${{ inputs.APP_URL }}
+        BETA_URL: ${{ inputs.BETA_URL }}
+        AUTH_REMINDER_EXPIRE: ${{ inputs.AUTH_REMINDER_EXPIRE }}
+        SESSION_DRIVER: ${{ inputs.SESSION_DRIVER }}
+        SESSION_LIFETIME: ${{ inputs.SESSION_LIFETIME }}
+        SESSION_CONNECTION: ${{ inputs.SESSION_CONNECTION }}
+        SESSION_SECURE: ${{ inputs.SESSION_SECURE }}
+        DB_CONNECTION: ${{ inputs.DB_CONNECTION }}
+        DB_HOST: ${{ inputs.DB_HOST }}
+        DB_PORT: ${{ inputs.DB_PORT }}
+        DB_DATABASE: ${{ inputs.DB_DATABASE }}
+        DB_USERNAME: ${{ inputs.DB_USERNAME }}
+        DB_PASSWORD: ${{ inputs.DB_PASSWORD }}
+        DB_REPLI1_CONNECTION: ${{ inputs.DB_REPLI1_CONNECTION }}
+        DB_REPLI1_HOST: ${{ inputs.DB_REPLI1_HOST }}
+        DB_REPLI1_PORT: ${{ inputs.DB_REPLI1_PORT }}
+        DB_REPLI1_DATABASE: ${{ inputs.DB_REPLI1_DATABASE }}
+        DB_REPLI1_USERNAME: ${{ inputs.DB_REPLI1_USERNAME }}
+        DB_REPLI1_PASSWORD: ${{ inputs.DB_REPLI1_PASSWORD }}
+        DB_REPLI2_CONNECTION: ${{ inputs.DB_REPLI2_CONNECTION }}
+        DB_REPLI2_HOST: ${{ inputs.DB_REPLI2_HOST }}
+        DB_REPLI2_PORT: ${{ inputs.DB_REPLI2_PORT }}
+        DB_REPLI2_DATABASE: ${{ inputs.DB_REPLI2_DATABASE }}
+        DB_REPLI2_USERNAME: ${{ inputs.DB_REPLI2_USERNAME }}
+        DB_REPLI2_PASSWORD: ${{ inputs.DB_REPLI2_PASSWORD }}
+        DB_GATILHO_CONNECTION: ${{ inputs.DB_GATILHO_CONNECTION }}
+        DB_GATILHO_HOST: ${{ inputs.DB_GATILHO_HOST }}
+        DB_GATILHO_PORT: ${{ inputs.DB_GATILHO_PORT }}
+        DB_GATILHO_DATABASE: ${{ inputs.DB_GATILHO_DATABASE }}
+        DB_GATILHO_USERNAME: ${{ inputs.DB_GATILHO_USERNAME }}
+        DB_GATILHO_PASSWORD: ${{ inputs.DB_GATILHO_PASSWORD }}
+        LOG_CONNECTION: ${{ inputs.LOG_CONNECTION }}
+        LOG_HOST: ${{ inputs.LOG_HOST }}
+        LOG_PORT: ${{ inputs.LOG_PORT }}
+        LOG_DATABASE: ${{ inputs.LOG_DATABASE }}
+        LOG_USERNAME: ${{ inputs.LOG_USERNAME }}
+        LOG_PASSWORD: ${{ inputs.LOG_PASSWORD }}
+        REDIS_HOST: ${{ inputs.REDIS_HOST }}
+        REDIS_DATABASE: ${{ inputs.REDIS_DATABASE }}
+        REDIS_PASSWORD: ${{ inputs.REDIS_PASSWORD }}
+        REDIS_PORT: ${{ inputs.REDIS_PORT }}
+        S3_KEY: ${{ inputs.S3_KEY }}
+        S3_SECRET: ${{ inputs.S3_SECRET }}
+        SQS_ACCESS_KEY: ${{ inputs.SQS_ACCESS_KEY }}
+        SQS_SECRET_ACCESS_KEY: ${{ inputs.SQS_SECRET_ACCESS_KEY }}
+        ZENDESK_USERNAME: ${{ inputs.ZENDESK_USERNAME }}
+        ZENDESK_PASSWORD: ${{ inputs.ZENDESK_PASSWORD }}
+        REMESSA_RETORNO_DNS: ${{ inputs.REMESSA_RETORNO_DNS }}
+        REMESSA_RETORNO_USER: ${{ inputs.REMESSA_RETORNO_USER }}
+        REMESSA_RETORNO_PASSWORD: ${{ inputs.REMESSA_RETORNO_PASSWORD }}
+        METABASE_SITE_URL: ${{ inputs.METABASE_SITE_URL }}
+        METABASE_SECRET_KEY: ${{ inputs.METABASE_SECRET_KEY }}
+        METABASE_TOKEN: ${{ inputs.METABASE_TOKEN }}
+        OMNIE_KEY_PROESC: ${{ inputs.OMNIE_KEY_PROESC }}
+        OMNIE_SECRET_PROESC: ${{ inputs.OMNIE_SECRET_PROESC }}
+        OMNIE_KEY_INOVADADOS: ${{ inputs.OMNIE_KEY_INOVADADOS }}
+        OMNIE_SECRET_INOVADAOS: ${{ inputs.OMNIE_SECRET_INOVADAOS }}
+        OMNIE_KEY_REDHOUSE: ${{ inputs.OMNIE_KEY_REDHOUSE }}
+        OMNIE_SECRET_REDHOUSE: ${{ inputs.OMNIE_SECRET_REDHOUSE }}
+        ONESIGNAL_KEY: ${{ inputs.ONESIGNAL_KEY }}
+        ONESIGNAL_API_PROESC: ${{ inputs.ONESIGNAL_API_PROESC }}
+        ONESIGNAL_API_PREFEITURA: ${{ inputs.ONESIGNAL_API_PREFEITURA }}
+        IUGU_MARKETPLACE: ${{ inputs.IUGU_MARKETPLACE }}
+        IUGU_FINANCEIRO: ${{ inputs.IUGU_FINANCEIRO }}
+        JWT_SECRET: ${{ inputs.JWT_SECRET }}
+        ZENVIA_SECRET: ${{ inputs.ZENVIA_SECRET }}
+        PIXOUT_SECRET: ${{ inputs.PIXOUT_SECRET }}
+        LAYERS_TOKEN: ${{ inputs.LAYERS_TOKEN }}
+        TOKEN_GATILHOS: ${{ inputs.TOKEN_GATILHOS }}
+        ENOTAS_TOKEN: ${{ inputs.ENOTAS_TOKEN }}
+        POSITUS_API_TOKEN: ${{ inputs.POSITUS_API_TOKEN }}
+        MAIL_DRIVER: ${{ inputs.MAIL_DRIVER }}
+        MAIL_HOST: ${{ inputs.MAIL_HOST }}
+        MAIL_PORT: ${{ inputs.MAIL_PORT }}
+        MAIL_FROM_ADDRESS: ${{ inputs.MAIL_FROM_ADDRESS }}
+        MAIL_ENCRYPTION: ${{ inputs.MAIL_ENCRYPTION }}
+        MAIL_USERNAME: ${{ inputs.MAIL_USERNAME }}
+        MAIL_PASSWORD: ${{ inputs.MAIL_PASSWORD }}

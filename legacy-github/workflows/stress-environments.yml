@@ -1,0 +1,170 @@
+name: Generates a sub cluster to make stress tests
+on:
+  workflow_dispatch:
+    inputs: # Processo de settar o env DEVE ser feito via Github Secrets
+      domain:
+        type: string
+        description: Domínio que será feito o deploy
+        required: false
+      release-name:
+        type: string
+        description: Nome da Release a ser feita no Kubernetes
+jobs:
+  stress-ambiente:
+    runs-on: ubuntu-latest
+    environment: stress
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Get Code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Configure Role AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.GH_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ secrets.GH_ACTIONS_AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: true
+
+      - name: Build cache for Docker
+        uses: actions/cache@v3
+        with:
+          path: app-build-cache
+          key: ${{ runner.os }}-app-build-cache-${{ hashFiles('composer.*') }}
+
+      - name: Inject cache into docker
+        uses: reproducible-containers/buildkit-cache-dance@v2.1.2
+        with:
+          cache-source: app-build-cache
+
+      - name: Create repo
+        shell: bash
+        continue-on-error: true
+        run: |
+          aws ecr create-repository --region ${{ secrets.GH_ACTIONS_AWS_REGION }} --repository-name ci-app-proesc-${{ github.event.inputs.release-name }}
+
+      - name: Build and push app
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/dockerfiles/Dockerfile
+          push: true
+          tags: 607751015014.dkr.ecr.sa-east-1.amazonaws.com/ci-app-proesc-${{ github.event.inputs.release-name }}:latest,607751015014.dkr.ecr.sa-east-1.amazonaws.com/ci-app-proesc-${{ github.event.inputs.release-name }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Creates kubeconfig
+        shell: bash
+        run: echo ${{ secrets.K8S_CONFIG }} | base64 -d > /tmp/kubeconfig.yml
+
+      - name: Configure User AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.GH_ACTIONS_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.GH_ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.GH_ACTIONS_AWS_REGION }}
+
+      - name: Install script dependencies
+        shell: bash
+        run: pip install -r .github/assets/requirements.txt --no-cache-dir --prefer-binary
+
+      - name: Build and Deploy
+        shell: bash
+        run: |
+          python .github/scripts/k8s_env.py \
+            -a create \
+            -d ${{ github.event.inputs.domain }} \
+            -i ${{ github.sha }} \
+            -r 607751015014.dkr.ecr.sa-east-1.amazonaws.com/ci-app-proesc-${{ github.event.inputs.release-name }} \
+            -p 8080 \
+            -n ${{ github.event.inputs.release-name }} \
+            -s true
+        env:
+          KUBECONFIG: /tmp/kubeconfig.yml
+          APP_NAME: ${{ secrets.APP_NAME }}
+          APP_ENV: ${{ secrets.APP_ENV }}
+          APP_URL: ${{ secrets.APP_URL }}
+          BETA_URL: ${{ secrets.BETA_URL }}
+          AUTH_REMINDER_EXPIRE: ${{ secrets.AUTH_REMINDER_EXPIRE }}
+          SESSION_DRIVER: ${{ secrets.SESSION_DRIVER }}
+          SESSION_LIFETIME: ${{ secrets.SESSION_LIFETIME }}
+          SESSION_CONNECTION: ${{ secrets.SESSION_CONNECTION }}
+          SESSION_SECURE: ${{ secrets.SESSION_SECURE }}
+          DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_REPLI1_CONNECTION: ${{ secrets.DB_REPLI1_CONNECTION }}
+          DB_REPLI1_HOST: ${{ secrets.DB_REPLI1_HOST }}
+          DB_REPLI1_PORT: ${{ secrets.DB_REPLI1_PORT }}
+          DB_REPLI1_DATABASE: ${{ secrets.DB_REPLI1_DATABASE }}
+          DB_REPLI1_USERNAME: ${{ secrets.DB_REPLI1_USERNAME }}
+          DB_REPLI1_PASSWORD: ${{ secrets.DB_REPLI1_PASSWORD }}
+          DB_REPLI2_CONNECTION: ${{ secrets.DB_REPLI2_CONNECTION }}
+          DB_REPLI2_HOST: ${{ secrets.DB_REPLI2_HOST }}
+          DB_REPLI2_PORT: ${{ secrets.DB_REPLI2_PORT }}
+          DB_REPLI2_DATABASE: ${{ secrets.DB_REPLI2_DATABASE }}
+          DB_REPLI2_USERNAME: ${{ secrets.DB_REPLI2_USERNAME }}
+          DB_REPLI2_PASSWORD: ${{ secrets.DB_REPLI2_PASSWORD }}
+          DB_GATILHO_CONNECTION: ${{ secrets.DB_GATILHO_CONNECTION }}
+          DB_GATILHO_HOST: ${{ secrets.DB_GATILHO_HOST }}
+          DB_GATILHO_PORT: ${{ secrets.DB_GATILHO_PORT }}
+          DB_GATILHO_DATABASE: ${{ secrets.DB_GATILHO_DATABASE }}
+          DB_GATILHO_USERNAME: ${{ secrets.DB_GATILHO_USERNAME }}
+          DB_GATILHO_PASSWORD: ${{ secrets.DB_GATILHO_PASSWORD }}
+          LOG_CONNECTION: ${{ secrets.LOG_CONNECTION }}
+          LOG_HOST: ${{ secrets.LOG_HOST }}
+          LOG_PORT: ${{ secrets.LOG_PORT }}
+          LOG_DATABASE: ${{ secrets.LOG_DATABASE }}
+          LOG_USERNAME: ${{ secrets.LOG_USERNAME }}
+          LOG_PASSWORD: ${{ secrets.LOG_PASSWORD }}
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
+          REDIS_DATABASE: ${{ secrets.REDIS_DATABASE }}
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+          REDIS_PORT: ${{ secrets.REDIS_PORT }}
+          S3_KEY: ${{ secrets.S3_KEY }}
+          S3_SECRET: ${{ secrets.S3_SECRET }}
+          SQS_ACCESS_KEY: ${{ secrets.SQS_ACCESS_KEY }}
+          SQS_SECRET_ACCESS_KEY: ${{ secrets.SQS_SECRET_ACCESS_KEY }}
+          ZENDESK_USERNAME: ${{ secrets.ZENDESK_USERNAME }}
+          ZENDESK_PASSWORD: ${{ secrets.ZENDESK_PASSWORD }}
+          REMESSA_RETORNO_DNS: ${{ secrets.REMESSA_RETORNO_DNS }}
+          REMESSA_RETORNO_USER: ${{ secrets.REMESSA_RETORNO_USER }}
+          REMESSA_RETORNO_PASSWORD: ${{ secrets.REMESSA_RETORNO_PASSWORD }}
+          METABASE_SITE_URL: ${{ secrets.METABASE_SITE_URL }}
+          METABASE_SECRET_KEY: ${{ secrets.METABASE_SECRET_KEY }}
+          METABASE_TOKEN: ${{ secrets.METABASE_TOKEN }}
+          OMNIE_KEY_PROESC: ${{ secrets.OMNIE_KEY_PROESC }}
+          OMNIE_SECRET_PROESC: ${{ secrets.OMNIE_SECRET_PROESC }}
+          OMNIE_KEY_INOVADADOS: ${{ secrets.OMNIE_KEY_INOVADADOS }}
+          OMNIE_SECRET_INOVADAOS: ${{ secrets.OMNIE_SECRET_INOVADAOS }}
+          ONESIGNAL_KEY: ${{ secrets.ONESIGNAL_KEY }}
+          ONESIGNAL_API_PROESC: ${{ secrets.ONESIGNAL_API_PROESC }}
+          ONESIGNAL_API_PREFEITURA: ${{ secrets.ONESIGNAL_API_PREFEITURA }}
+          IUGU_MARKETPLACE: ${{ secrets.IUGU_MARKETPLACE }}
+          IUGU_FINANCEIRO: ${{ secrets.IUGU_FINANCEIRO }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          ZENVIA_SECRET: ${{ secrets.ZENVIA_SECRET }}
+          PIXOUT_SECRET: ${{ secrets.PIXOUT_SECRET }}
+          LAYERS_TOKEN: ${{ secrets.LAYERS_TOKEN }}
+          TOKEN_GATILHOS: ${{ secrets.TOKEN_GATILHOS }}
+          ENOTAS_TOKEN: ${{ secrets.ENOTAS_TOKEN }}
+          POSITUS_API_TOKEN: ${{ secrets.POSITUS_API_TOKEN }}
+          MAIL_DRIVER: ${{ secrets.MAIL_DRIVER }}
+          MAIL_HOST: ${{ secrets.MAIL_HOST }}
+          MAIL_PORT: ${{ secrets.MAIL_PORT }}
+          MAIL_FROM_ADDRESS: ${{ secrets.MAIL_FROM_ADDRESS }}
+          MAIL_ENCRYPTION: ${{ secrets.MAIL_ENCRYPTION }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}

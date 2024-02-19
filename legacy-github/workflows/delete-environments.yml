@@ -1,0 +1,89 @@
+name: Deletes CI Environment
+on:
+  workflow_dispatch:
+    inputs:
+      domain:
+        type: string
+        description: Domínio que será feito o deploy
+        required: false
+      release-name:
+        type: string
+        description: Nome da Release a ser feita no Kubernetes
+  pull_request:
+    types:
+      - closed
+    branches:
+      - master
+      - desenv
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+    environment: ci
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Get Code
+        uses: actions/checkout@v3
+        if: github.event_name == 'pull_request'
+
+      - name: Get Code
+        uses: actions/checkout@v3
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          ref: master
+
+      - name: Creates kubeconfig
+        shell: bash
+        run: echo ${{ secrets.K8S_CONFIG }} | base64 -d > /tmp/kubeconfig.yml
+
+      - name: Install script dependencies
+        shell: bash
+        run: pip install -r .github/assets/requirements.txt --no-cache-dir --prefer-binary
+
+      - name: Configure User AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.GH_ACTIONS_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.GH_ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.GH_ACTIONS_AWS_REGION }}
+
+      - name: Delete environment
+        shell: bash
+        if: github.event_name == 'pull_request'
+        run: |
+          python .github/scripts/k8s_env.py \
+            -a delete \
+            -d ${{ github.event.number }}.ci.proesc.com \
+            -n proesc-${{ github.event.number }}
+        env:
+          KUBECONFIG: /tmp/kubeconfig.yml
+
+      - name: Delete environment
+        shell: bash
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          python .github/scripts/k8s_env.py \
+            -a delete \
+            -d ${{ github.event.inputs.domain }} \
+            -n ${{ github.event.inputs.release-name }}
+        env:
+          KUBECONFIG: /tmp/kubeconfig.yml
+      
+      - name: Configure Role AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.GH_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ secrets.GH_ACTIONS_AWS_REGION }}
+    
+      - name: Delete repository
+        shell: bash
+        if: github.event_name == 'pull_request'
+        run: |
+          aws ecr delete-repository --region ${{ secrets.GH_ACTIONS_AWS_REGION }} --repository-name ci-app-proesc-${{ github.event.number }} --force
+      
+      - name: Delete repository
+        shell: bash
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          aws ecr delete-repository --region ${{ secrets.GH_ACTIONS_AWS_REGION }} --repository-name ci-app-proesc-${{ github.event.inputs.release-name }} --force

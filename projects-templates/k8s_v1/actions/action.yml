@@ -1,0 +1,12 @@
+name: Run K8s v1 CLI
+description: Runs the CLI with the specified args passed to it
+inputs:
+  extra-args:
+    description: All the args to be passed to the CLI
+    required: true
+outputs:
+  output:
+    description: The captured output of both stdout and stderr from the Ansible Playbook run
+runs:
+  using: node20
+  main: main.js

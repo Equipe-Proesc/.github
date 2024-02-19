@@ -1,0 +1,175 @@
+name: Continuous Delivery & Deploy for Proesc
+on:
+  workflow_dispatch:
+    inputs:
+      description:
+        type: string
+        description: Descrição do motivo da atualização
+        required: true
+  schedule:
+    # cron in UTC time, runs at 13:00 and 20:00 in Brasília's time
+    - cron: "5 16 * * *"
+    - cron: "5 23 * * *"
+jobs:
+  ambientes:
+    runs-on: ubuntu-latest
+    environment: ${{ matrix.environment }}
+    strategy:
+      matrix:
+        include:
+          - deploy: "true"
+            releaseName: proesc-desenv
+            environment: desenv
+            branch: desenv
+            isProduction: "false"
+          - deploy: "true"
+            releaseName: proesc-homologa
+            environment: homologa
+            branch: master
+            isProduction: "false"
+          - deploy: "true"
+            releaseName: proesc-dados1
+            environment: dados1
+            branch: master
+            isProduction: "false"
+          - deploy: "true"
+            releaseName: proesc-dados2
+            environment: dados2
+            branch: master
+            isProduction: "false"
+          - deploy: "true"
+            releaseName: proesc-dados3
+            environment: dados3
+            branch: master
+            isProduction: "false"
+          - deploy: "true"
+            releaseName: proesc-dados4
+            environment: dados4
+            branch: master
+            isProduction: "false"
+          - deploy: "true"
+            releaseName: proesc-prod
+            environment: prod
+            branch: master
+            isProduction: "true"
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Get Code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ matrix.branch }}
+
+      - name: Build and Deploy
+        id: build-deploy
+        if: matrix.releaseName != 'proesc-prod' || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && contains(fromJSON('["matheus-dr", "Lorenalgm", "renankabal"]'), github.actor))
+        uses: ./.github/actions/cd-action/
+        with:
+          imageTag: ${{ matrix.branch }}-${{ github.sha }}
+          awsRoleArn: ${{ secrets.GH_ACTIONS_ROLE_ARN }}
+          awsRegion: ${{ secrets.GH_ACTIONS_AWS_REGION }}
+          kubeconfig: ${{ secrets.K8S_CONFIG }}
+          accessKeyId: ${{ secrets.GH_ACTIONS_AWS_ACCESS_KEY_ID }}
+          secretAccessKey: ${{ secrets.GH_ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          fullnameOverride: ${{ matrix.releaseName }}
+          k8sNamespace: default
+          isProduction: ${{ matrix.isProduction }}
+          atlassianValidationConfig: ${{ secrets.ATLASSIAN_VALIDATION_CONFIG }}
+          APP_NAME: ${{ secrets.APP_NAME }}
+          APP_ENV: ${{ secrets.APP_ENV }}
+          APP_URL: ${{ secrets.APP_URL }}
+          BETA_URL: ${{ secrets.BETA_URL }}
+          AUTH_REMINDER_EXPIRE: ${{ secrets.AUTH_REMINDER_EXPIRE }}
+          SESSION_DRIVER: ${{ secrets.SESSION_DRIVER }}
+          SESSION_LIFETIME: ${{ secrets.SESSION_LIFETIME }}
+          SESSION_CONNECTION: ${{ secrets.SESSION_CONNECTION }}
+          SESSION_SECURE: ${{ secrets.SESSION_SECURE }}
+          DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_REPLI1_CONNECTION: ${{ secrets.DB_REPLI1_CONNECTION }}
+          DB_REPLI1_HOST: ${{ secrets.DB_REPLI1_HOST }}
+          DB_REPLI1_PORT: ${{ secrets.DB_REPLI1_PORT }}
+          DB_REPLI1_DATABASE: ${{ secrets.DB_REPLI1_DATABASE }}
+          DB_REPLI1_USERNAME: ${{ secrets.DB_REPLI1_USERNAME }}
+          DB_REPLI1_PASSWORD: ${{ secrets.DB_REPLI1_PASSWORD }}
+          DB_REPLI2_CONNECTION: ${{ secrets.DB_REPLI2_CONNECTION }}
+          DB_REPLI2_HOST: ${{ secrets.DB_REPLI2_HOST }}
+          DB_REPLI2_PORT: ${{ secrets.DB_REPLI2_PORT }}
+          DB_REPLI2_DATABASE: ${{ secrets.DB_REPLI2_DATABASE }}
+          DB_REPLI2_USERNAME: ${{ secrets.DB_REPLI2_USERNAME }}
+          DB_REPLI2_PASSWORD: ${{ secrets.DB_REPLI2_PASSWORD }}
+          DB_GATILHO_CONNECTION: ${{ secrets.DB_GATILHO_CONNECTION }}
+          DB_GATILHO_HOST: ${{ secrets.DB_GATILHO_HOST }}
+          DB_GATILHO_PORT: ${{ secrets.DB_GATILHO_PORT }}
+          DB_GATILHO_DATABASE: ${{ secrets.DB_GATILHO_DATABASE }}
+          DB_GATILHO_USERNAME: ${{ secrets.DB_GATILHO_USERNAME }}
+          DB_GATILHO_PASSWORD: ${{ secrets.DB_GATILHO_PASSWORD }}
+          LOG_CONNECTION: ${{ secrets.LOG_CONNECTION }}
+          LOG_HOST: ${{ secrets.LOG_HOST }}
+          LOG_PORT: ${{ secrets.LOG_PORT }}
+          LOG_DATABASE: ${{ secrets.LOG_DATABASE }}
+          LOG_USERNAME: ${{ secrets.LOG_USERNAME }}
+          LOG_PASSWORD: ${{ secrets.LOG_PASSWORD }}
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
+          REDIS_DATABASE: ${{ secrets.REDIS_DATABASE }}
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+          REDIS_PORT: ${{ secrets.REDIS_PORT }}
+          S3_KEY: ${{ secrets.S3_KEY }}
+          S3_SECRET: ${{ secrets.S3_SECRET }}
+          SQS_ACCESS_KEY: ${{ secrets.SQS_ACCESS_KEY }}
+          SQS_SECRET_ACCESS_KEY: ${{ secrets.SQS_SECRET_ACCESS_KEY }}
+          ZENDESK_USERNAME: ${{ secrets.ZENDESK_USERNAME }}
+          ZENDESK_PASSWORD: ${{ secrets.ZENDESK_PASSWORD }}
+          REMESSA_RETORNO_DNS: ${{ secrets.REMESSA_RETORNO_DNS }}
+          REMESSA_RETORNO_USER: ${{ secrets.REMESSA_RETORNO_USER }}
+          REMESSA_RETORNO_PASSWORD: ${{ secrets.REMESSA_RETORNO_PASSWORD }}
+          METABASE_SITE_URL: ${{ secrets.METABASE_SITE_URL }}
+          METABASE_SECRET_KEY: ${{ secrets.METABASE_SECRET_KEY }}
+          METABASE_TOKEN: ${{ secrets.METABASE_TOKEN }}
+          OMNIE_KEY_PROESC: ${{ secrets.OMNIE_KEY_PROESC }}
+          OMNIE_SECRET_PROESC: ${{ secrets.OMNIE_SECRET_PROESC }}
+          OMNIE_KEY_INOVADADOS: ${{ secrets.OMNIE_KEY_INOVADADOS }}
+          OMNIE_SECRET_INOVADAOS: ${{ secrets.OMNIE_SECRET_INOVADAOS }}
+          OMNIE_KEY_REDHOUSE: ${{ secrets.OMNIE_KEY_REDHOUSE }}
+          OMNIE_SECRET_REDHOUSE: ${{ secrets.OMNIE_SECRET_REDHOUSE }}
+          ONESIGNAL_KEY: ${{ secrets.ONESIGNAL_KEY }}
+          ONESIGNAL_API_PROESC: ${{ secrets.ONESIGNAL_API_PROESC }}
+          ONESIGNAL_API_PREFEITURA: ${{ secrets.ONESIGNAL_API_PREFEITURA }}
+          IUGU_MARKETPLACE: ${{ secrets.IUGU_MARKETPLACE }}
+          IUGU_FINANCEIRO: ${{ secrets.IUGU_FINANCEIRO }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          ZENVIA_SECRET: ${{ secrets.ZENVIA_SECRET }}
+          PIXOUT_SECRET: ${{ secrets.PIXOUT_SECRET }}
+          LAYERS_TOKEN: ${{ secrets.LAYERS_TOKEN }}
+          TOKEN_GATILHOS: ${{ secrets.TOKEN_GATILHOS }}
+          ENOTAS_TOKEN: ${{ secrets.ENOTAS_TOKEN }}
+          POSITUS_API_TOKEN: ${{ secrets.POSITUS_API_TOKEN }}
+          MAIL_DRIVER: ${{ secrets.MAIL_DRIVER }}
+          MAIL_HOST: ${{ secrets.MAIL_HOST }}
+          MAIL_PORT: ${{ secrets.MAIL_PORT }}
+          MAIL_FROM_ADDRESS: ${{ secrets.MAIL_FROM_ADDRESS }}
+          MAIL_ENCRYPTION: ${{ secrets.MAIL_ENCRYPTION }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+
+      - name: Feedback of failure
+        if: failure() && matrix.releaseName == 'proesc-prod'
+        shell: bash
+        run: |
+          curl -XPOST --data '{"text":"Houve uma falha na atualização do Proesc <!subteam^S04UU2T0H2S> :panico:"}' https://hooks.slack.com/services/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
+
+      - name: Feedback of success
+        if: success() && matrix.releaseName == 'proesc-prod'
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            MENSAGEM_JSON='{"text":"Proesc atualizado com sucesso! :sunglasses:\nFeita por: ${{ github.actor }}\n${{github.event.inputs.description }}"}'
+          else
+            MENSAGEM_JSON='{"text":"Proesc atualizado com sucesso! :sunglasses:"}'
+          fi
+          curl -XPOST --data "$MENSAGEM_JSON" https://hooks.slack.com/services/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
